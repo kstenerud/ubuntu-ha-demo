@@ -1,0 +1,9 @@
+#cloud-config
+
+bootcmd:
+  # https://github.com/CanonicalLtd/multipass/issues/666
+  - sudo ln -fs /run/systemd/resolve/resolv.conf /etc/resolv.conf
+
+packages:
+  - nginx
+  - keepalived

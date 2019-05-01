@@ -1,0 +1,22 @@
+#cloud-config
+
+bootcmd:
+  - sudo ln -fs /run/systemd/resolve/resolv.conf /etc/resolv.conf
+  - sed -i "s/127.0.1.1 {{fqdn}} {{hostname}}/$(ip addr | awk '/global/ {print $2}' | sed 's/\([^\/]*\)\/.*/\1/g') {{fqdn}} {{hostname}}/g" /etc/cloud/templates/hosts.debian.tmpl
+
+groups:
+  - haclient
+
+# Add users to the system. Users are added after groups are added.
+users:
+  - default
+  - name: hacluster
+    primary_group: haclient
+    homedir: /var/lib/pacemaker
+    no_create_home: true
+    shell: /bin/sh
+
+chpasswd:
+  list: |
+      hacluster:hacluster
+  expire: False

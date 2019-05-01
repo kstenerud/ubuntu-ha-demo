@@ -1,0 +1,19 @@
+#cloud-config
+
+bootcmd:
+  # https://github.com/CanonicalLtd/multipass/issues/666
+  - sudo ln -fs /run/systemd/resolve/resolv.conf /etc/resolv.conf
+  - service systemd-networkd restart
+
+write_files:
+  - path: "/lib/systemd/network/90-keepalived.netdev"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [NetDev]
+      Name=keepalived0
+      Kind=dummy
+
+packages:
+  - nginx
+  - keepalived

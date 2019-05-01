@@ -2,6 +2,8 @@
 
 set -eu
 
+UBUNTU_DISTRO=bionic
+
 
 ##########
 # Common #
@@ -66,6 +68,8 @@ create_guest()
 
     wait_for_guest_network "$guest_name"
     echo "\`\`\`"
+
+    run_cmd_quoted "$guest_name" "echo 'Acquire::http { Proxy \"http://apt-cache:3142\"; }' | sudo tee /etc/apt/apt.conf.d/00-apt-proxy"
     run_cmd "$guest_name" sudo apt update
     run_cmd "$guest_name" sudo apt dist-upgrade -y
 }
@@ -197,9 +201,9 @@ create_ha_node()
     password="$3"
 
     if [ "$guest_type" == "lxd" ]; then
-        create_guest "$guest_name" lxd ubuntu-daily cosmic
+        create_guest "$guest_name" lxd ubuntu-daily $UBUNTU_DISTRO
     else
-        create_guest "$guest_name" multipass daily cosmic
+        create_guest "$guest_name" multipass daily $UBUNTU_DISTRO
     fi
     run_cmd "$guest_name" sudo apt install -y pacemaker pcs corosync fence-agents
     run_cmd_quoted "$guest_name" "echo hacluster:$password | sudo chpasswd"
@@ -227,8 +231,8 @@ print_usage()
 NODE1=ha-node1
 NODE2=ha-node2
 HACLUSTER_PASSWORD=hacluster
-# NODE_TYPE=multipass
-NODE_TYPE=lxd
+NODE_TYPE=multipass
+# NODE_TYPE=lxd
 
 if [ $# -ne 1 ]; then
     echo "Please provide an unused ip address on the bridge used by $NODE_TYPE ($(get_bridge_network_address $NODE_TYPE))"
